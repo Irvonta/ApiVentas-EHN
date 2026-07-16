@@ -9,13 +9,18 @@ public class Cobranza
     [BsonRepresentation(BsonType.ObjectId)]
     public string? Id { get; set; }
 
-    public string Folio { get; set; } = string.Empty;
+
+    public string NotaId { get; set; } = string.Empty;
+
+
+    public string AgenteCobroId { get; set; } = string.Empty;
+
 
     public decimal MontoCobrado { get; set; }
 
+
     public DateTime FechaCobro { get; set; } = DateTime.Now;
 
-    public string AgenteCobranzaId { get; set; } = string.Empty;
 
     public string Observaciones { get; set; } = string.Empty;
 }
