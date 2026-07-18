@@ -32,4 +32,26 @@ public class NotasController : ControllerBase
 
         return Ok(nota);
     }
+
+
+
+
+[HttpGet("{id}/detalle")]
+public async Task<IActionResult> ObtenerDetalle(string id)
+{
+    var resultado = await _notaService.ObtenerDetalle(id);
+
+
+    if (resultado == null)
+        return NotFound();
+
+
+    return Ok(resultado);
+}
+
+
+
+
+
+
 }

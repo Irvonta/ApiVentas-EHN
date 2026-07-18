@@ -34,4 +34,6 @@ public class Nota
     // Pendiente = aún no se cobra completa
     // Pagada = liquidada
     public string Estado { get; set; } = "Pendiente";
+
+    public string AgenteVentaId { get; set; } = string.Empty;
 }

@@ -3,7 +3,6 @@ using ApiVentas.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ApiVentas.Controllers;
-
 [ApiController]
 [Route("api/[controller]")]
 public class AgentesController : ControllerBase
@@ -30,4 +29,26 @@ public class AgentesController : ControllerBase
 
         return Ok(agente);
     }
+
+    [HttpGet("{agenteId}/resumen")]
+    public async Task<IActionResult> ObtenerResumen(
+        string agenteId)
+    {
+        var resultado =
+            await _service.ObtenerResumen(agenteId);
+
+        return Ok(resultado);
+    }
+
+
+[HttpGet("{agenteId}/cobranzas")]
+public async Task<IActionResult> ObtenerCobranza(
+    string agenteId)
+{
+    var resultado =
+        await _service.ObtenerCobranza(agenteId);
+
+    return Ok(resultado);
+}
+
 }
