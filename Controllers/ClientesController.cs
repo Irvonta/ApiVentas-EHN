@@ -32,4 +32,17 @@ public class ClientesController : ControllerBase
 
         return Ok(cliente);
     }
+
+
+
+[HttpGet("agente/{agenteId}")]
+public async Task<IActionResult> ObtenerPorAgente(
+    string agenteId)
+{
+    var resultado =
+        await _clienteService.ObtenerClientesPorAgente(agenteId);
+
+    return Ok(resultado);
+}
+    
 }

@@ -13,16 +13,11 @@ public class Meta
     public string AgenteId { get; set; } = string.Empty;
 
 
-    public int Mes { get; set; }
+    // Ejemplo: 2026-07
+    public string Periodo { get; set; } = string.Empty;
 
 
-    public int Anio { get; set; }
-
-
-    public decimal MetaVentas { get; set; }
-
-
-    public decimal MetaCobranza { get; set; }
+    public decimal ObjetivoVenta { get; set; }
 
 
     public bool Activa { get; set; } = true;

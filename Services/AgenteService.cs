@@ -61,6 +61,7 @@ public class AgenteService
         Cobrado = cobrado,
         Pendiente = ventas - cobrado
     };
+    
 }
 
 
