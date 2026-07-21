@@ -27,6 +27,8 @@ builder.Services.AddSingleton<ClienteService>();
 
 builder.Services.AddSingleton<MetaService>();
 
+builder.Services.AddSingleton<DashboardService>();
+
 
 var app = builder.Build();
 

@@ -33,4 +33,24 @@ public class MetasController : ControllerBase
 
         return Ok(meta);
     }
+
+
+
+
+
+
+
+
+    [HttpGet("{agenteId}/resumen")]
+public async Task<IActionResult> ObtenerResumen(
+    string agenteId)
+{
+    var resultado =
+        await _metaService.ObtenerResumen(agenteId);
+
+    if (resultado == null)
+        return NotFound();
+
+    return Ok(resultado);
+}
 }
