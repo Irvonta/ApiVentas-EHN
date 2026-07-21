@@ -3,6 +3,8 @@ using ApiVentas.Models;
 using ApiVentas.DTOs;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
+using ApiVentas.DTOs;
+
 
 namespace ApiVentas.Services;
 

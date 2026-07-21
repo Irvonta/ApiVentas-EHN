@@ -36,4 +36,6 @@ public class Nota
     public string Estado { get; set; } = "Pendiente";
 
     public string AgenteVentaId { get; set; } = string.Empty;
+
+    public DateTime? FechaLiquidacion { get; set; }
 }

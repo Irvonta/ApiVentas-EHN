@@ -8,7 +8,7 @@ namespace ApiVentas.Services;
 public class CobranzaService
 {
     private readonly IMongoCollection<Cobranza> _cobranzas;
-
+    private readonly IMongoCollection<Nota> _notas;
 
     public CobranzaService(IOptions<MongoSettings> settings)
     {
@@ -21,6 +21,7 @@ public class CobranzaService
 
 
         _cobranzas = database.GetCollection<Cobranza>("cobranzas");
+        _notas = database.GetCollection<Nota>("notas");
     }
 
 
@@ -33,7 +34,34 @@ public class CobranzaService
 
 
     public async Task Crear(Cobranza cobranza)
+{
+    await _cobranzas.InsertOneAsync(cobranza);
+
+    var nota = await _notas
+        .Find(x => x.Id == cobranza.NotaId)
+        .FirstOrDefaultAsync();
+
+    if (nota == null)
+        return;
+
+    var totalCobrado = await _cobranzas
+        .Find(x => x.NotaId == cobranza.NotaId)
+        .ToListAsync();
+
+    var sumaCobrada = totalCobrado
+        .Sum(x => x.MontoCobrado);
+
+    if (sumaCobrada >= nota.TotalVenta)
     {
-        await _cobranzas.InsertOneAsync(cobranza);
+        var update = Builders<Nota>
+            .Update
+            .Set(x => x.Estado, "Pagada")
+            .Set(x => x.FechaLiquidacion,
+                 DateTime.Now);
+
+        await _notas.UpdateOneAsync(
+            x => x.Id == nota.Id,
+            update);
     }
+}
 }
