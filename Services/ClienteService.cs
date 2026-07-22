@@ -3,7 +3,7 @@ using ApiVentas.Models;
 using ApiVentas.DTOs;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
-using ApiVentas.DTOs;
+
 
 
 namespace ApiVentas.Services;
@@ -40,7 +40,68 @@ public class ClienteService
     {
         await _clientes.InsertOneAsync(cliente);
     }
+public async Task<ClienteAnalisisDto?> ObtenerAnalisis(
+    string clienteId)
+{
+    var cliente = await _clientes
+        .Find(x => x.ClienteId == clienteId)
+        .FirstOrDefaultAsync();
 
+
+    if (cliente == null)
+        return null;
+
+
+    var notas = await _notas
+        .Find(x => x.ClienteId == clienteId)
+        .ToListAsync();
+
+
+    var pagadas = notas
+        .Where(x => x.FechaLiquidacion != null)
+        .ToList();
+
+
+    double promedioDias = 0;
+
+
+    if (pagadas.Count > 0)
+    {
+        promedioDias = pagadas
+            .Average(x =>
+                (x.FechaLiquidacion.Value -
+                 x.FechaVenta).TotalDays);
+    }
+
+
+    string clasificacion;
+
+
+    if (promedioDias <= 15)
+    {
+        clasificacion = "Cliente Bueno";
+    }
+    else if (promedioDias <= 45)
+    {
+        clasificacion = "Cliente Regular";
+    }
+    else
+    {
+        clasificacion = "Cliente de Riesgo";
+    }
+
+
+    return new ClienteAnalisisDto
+    {
+        ClienteId = cliente.ClienteId,
+        Nombre = cliente.Nombre,
+        ComprasTotales = notas.Sum(x => x.TotalVenta),
+        NotasTotales = notas.Count,
+        NotasPagadas = pagadas.Count,
+        PromedioDiasPago = Math.Round(promedioDias,2),
+        Clasificacion = clasificacion
+    };
+}
 
    public async Task<List<ClienteResumenDto>> ObtenerClientesPorAgente(
     string agenteId)

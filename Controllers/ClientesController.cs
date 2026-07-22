@@ -45,4 +45,21 @@ public async Task<IActionResult> ObtenerPorAgente(
     return Ok(resultado);
 }
     
+
+
+[HttpGet("{clienteId}/analisis")]
+public async Task<IActionResult> Analisis(
+    string clienteId)
+{
+    var resultado =
+        await _clienteService.ObtenerAnalisis(clienteId);
+
+
+    if(resultado == null)
+        return NotFound();
+
+
+    return Ok(resultado);
+}
+
 }
