@@ -62,4 +62,48 @@ public async Task<IActionResult> Analisis(
     return Ok(resultado);
 }
 
+
+
+[HttpGet("analisis")]
+public async Task<IActionResult>
+    ObtenerAnalisisTodos()
+{
+    var resultado =
+        await _clienteService
+            .ObtenerAnalisisTodos();
+
+    return Ok(resultado);
+}
+
+
+
+
+
+
+[HttpGet("pendientes")]
+public async Task<IActionResult>
+    ObtenerPendientes()
+{
+    var resultado =
+        await _clienteService
+            .ObtenerPendientes();
+
+    return Ok(resultado);
+}
+
+
+
+[HttpGet("{clienteId}/notas")]
+public async Task<IActionResult>
+    ObtenerNotasCliente(string clienteId)
+{
+    var resultado =
+        await _clienteService
+            .ObtenerNotasCliente(clienteId);
+
+    return Ok(resultado);
+}
+
+
+
 }

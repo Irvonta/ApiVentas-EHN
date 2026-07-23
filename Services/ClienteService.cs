@@ -102,6 +102,63 @@ public async Task<ClienteAnalisisDto?> ObtenerAnalisis(
         Clasificacion = clasificacion
     };
 }
+public async Task<List<ClienteAnalisisDto>>
+    ObtenerAnalisisTodos()
+{
+    var clientes = await _clientes
+        .Find(_ => true)
+        .ToListAsync();
+
+    var resultado =
+        new List<ClienteAnalisisDto>();
+
+    foreach (var cliente in clientes)
+    {
+        var notas = await _notas
+            .Find(x => x.ClienteId ==
+                       cliente.ClienteId)
+            .ToListAsync();
+
+        var pagadas = notas
+            .Where(x => x.FechaLiquidacion != null)
+            .ToList();
+
+        double promedioDias = 0;
+
+        if (pagadas.Count > 0)
+        {
+            promedioDias = pagadas
+                .Average(x =>
+                    (x.FechaLiquidacion!.Value -
+                     x.FechaVenta).TotalDays);
+        }
+
+        string clasificacion;
+
+        if (promedioDias <= 15)
+            clasificacion = "Cliente Bueno";
+        else if (promedioDias <= 45)
+            clasificacion = "Cliente Regular";
+        else
+            clasificacion = "Cliente de Riesgo";
+
+        resultado.Add(new ClienteAnalisisDto
+        {
+            ClienteId = cliente.ClienteId,
+            Nombre = cliente.Nombre,
+            ComprasTotales =
+                notas.Sum(x => x.TotalVenta),
+            NotasTotales = notas.Count,
+            NotasPagadas = pagadas.Count,
+            PromedioDiasPago =
+                Math.Round(promedioDias, 2),
+            Clasificacion = clasificacion
+        });
+    }
+
+    return resultado;
+}
+
 
    public async Task<List<ClienteResumenDto>> ObtenerClientesPorAgente(
     string agenteId)
@@ -152,4 +209,112 @@ public async Task<ClienteAnalisisDto?> ObtenerAnalisis(
 
     return resultado;
 }
+
+
+
+
+
+public async Task<List<ClientePendienteDto>>
+    ObtenerPendientes()
+{
+    var clientes = await _clientes
+        .Find(_ => true)
+        .ToListAsync();
+
+    var resultado =
+        new List<ClientePendienteDto>();
+
+    foreach (var cliente in clientes)
+    {
+        var notas = await _notas
+            .Find(x => x.ClienteId ==
+                       cliente.ClienteId)
+            .ToListAsync();
+
+        var idsNotas = notas
+            .Select(x => x.Id)
+            .ToList();
+
+        var cobranzas = await _cobranzas
+            .Find(x => idsNotas.Contains(x.NotaId))
+            .ToListAsync();
+
+        var comprado =
+            notas.Sum(x => x.TotalVenta);
+
+        var cobrado =
+            cobranzas.Sum(x => x.MontoCobrado);
+
+        var pendiente =
+            comprado - cobrado;
+
+        resultado.Add(
+            new ClientePendienteDto
+            {
+                ClienteId = cliente.ClienteId,
+                Nombre = cliente.Nombre,
+                TotalComprado = comprado,
+                TotalCobrado = cobrado,
+                Pendiente = pendiente
+            });
+    }
+
+    return resultado
+        .OrderByDescending(x => x.Pendiente)
+        .ToList();
+}
+
+
+
+
+
+public async Task<List<NotaDetalleDto>>
+    ObtenerNotasCliente(string clienteId)
+{
+    var notas = await _notas
+        .Find(x => x.ClienteId == clienteId)
+        .ToListAsync();
+
+    var resultado =
+        new List<NotaDetalleDto>();
+
+    foreach (var nota in notas)
+    {
+        var cobranzas = await _cobranzas
+            .Find(x => x.NotaId == nota.Id)
+            .ToListAsync();
+
+        resultado.Add(new NotaDetalleDto
+        {
+            Folio = nota.Folio,
+            ClienteId = nota.ClienteId,
+            TotalVenta = nota.TotalVenta,
+            TotalCobrado =
+                cobranzas.Sum(x => x.MontoCobrado),
+            Pendiente =
+                nota.TotalVenta -
+                cobranzas.Sum(x => x.MontoCobrado),
+            Estado = nota.Estado,
+
+            Cobros = cobranzas.Select(x =>
+                new CobroDetalleDto
+                {
+                    AgenteCobroId =
+                        x.AgenteCobroId,
+                    MontoCobrado =
+                        x.MontoCobrado,
+                    FechaCobro =
+                        x.FechaCobro,
+                    Observaciones =
+                        x.Observaciones
+                }).ToList()
+        });
+    }
+
+    return resultado;
+}
+
+
+
+
 }
