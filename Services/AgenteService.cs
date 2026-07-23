@@ -11,8 +11,9 @@ public class AgenteService
 
     private readonly IMongoCollection<Nota> _notas;
     private readonly IMongoCollection<Cobranza> _cobranzas;
-    private readonly IMongoCollection<Agente> _agentes;
-
+    private readonly IMongoCollection<Agente> _agentes; 
+    private readonly IMongoCollection<Cliente> _clientes;
+    private readonly IMongoCollection<Meta> _metas;
     public AgenteService(IOptions<MongoSettings> settings)
     {
         var client = new MongoClient(
@@ -24,6 +25,8 @@ public class AgenteService
         _agentes = database.GetCollection<Agente>("agentes");
         _notas = database.GetCollection<Nota>("notas");
         _cobranzas = database.GetCollection<Cobranza>("cobranzas");
+        _clientes = database.GetCollection<Cliente>("clientes");
+        _metas = database.GetCollection<Meta>("metas");
     }
 
     public async Task<List<Agente>> ObtenerTodos()
@@ -80,4 +83,74 @@ public async Task<AgenteCobranzaDto> ObtenerCobranza(
         TotalCobrado = cobranzas.Sum(x => x.MontoCobrado)
     };
 }
+
+
+
+
+public async Task<AgentePanelDto> ObtenerPanel(
+    string agenteId)
+{
+    var notas = await _notas
+        .Find(x => x.AgenteVentaId == agenteId)
+        .ToListAsync();
+
+    var idsNotas = notas
+        .Select(x => x.Id)
+        .ToList();
+
+    var cobranzas = await _cobranzas
+        .Find(x => idsNotas.Contains(x.NotaId))
+        .ToListAsync();
+
+    var clientes = await _agentes
+        .Database
+        .GetCollection<Cliente>("clientes")
+        .Find(x => x.AgenteAsignadoId == agenteId)
+        .ToListAsync();
+
+    var meta = await _agentes
+        .Database
+        .GetCollection<Meta>("metas")
+        .Find(x =>
+            x.AgenteId == agenteId &&
+            x.Activa)
+        .FirstOrDefaultAsync();
+
+    var ventas =
+        notas.Sum(x => x.TotalVenta);
+
+    var cobrado =
+        cobranzas.Sum(x => x.MontoCobrado);
+
+    decimal avance = 0;
+
+    if (meta != null &&
+        meta.ObjetivoVenta > 0)
+    {
+        avance =
+            Math.Round(
+                (ventas / meta.ObjetivoVenta)
+                * 100, 2);
+    }
+
+    return new AgentePanelDto
+    {
+        AgenteId = agenteId,
+        Ventas = ventas,
+        Cobrado = cobrado,
+        Pendiente = ventas - cobrado,
+        Clientes = clientes.Count,
+        NotasPendientes =
+            notas.Count(x =>
+                x.Estado == "Pendiente"),
+        AvanceMeta = avance
+    };
+}
+
+
+
+
+
+
+
 }

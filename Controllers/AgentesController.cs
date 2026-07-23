@@ -51,4 +51,18 @@ public async Task<IActionResult> ObtenerCobranza(
     return Ok(resultado);
 }
 
+
+
+[HttpGet("{agenteId}/panel")]
+public async Task<IActionResult> ObtenerPanel(
+    string agenteId)
+{
+    var resultado =
+        await _service.ObtenerPanel(agenteId);
+
+    return Ok(resultado);
+}
+
+
+
 }
