@@ -32,4 +32,19 @@ public class CobranzasController : ControllerBase
 
         return Ok(cobranza);
     }
+
+    
+    [HttpGet("pendientes")]
+public async Task<IActionResult>
+    ObtenerPendientes()
+{
+    var resultado =
+        await _cobranzaService
+            .ObtenerPendientes();
+
+    return Ok(resultado);
+}
+
+
+
 }

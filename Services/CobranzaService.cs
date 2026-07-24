@@ -2,6 +2,7 @@ using ApiVentas.Configurations;
 using ApiVentas.Models;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
+using ApiVentas.DTOs;
 
 namespace ApiVentas.Services;
 
@@ -64,4 +65,46 @@ public class CobranzaService
             update);
     }
 }
+
+
+public async Task<List<CobranzaPendienteDto>>
+    ObtenerPendientes()
+{
+    var notas = await _notas
+        .Find(x => x.Estado == "Pendiente")
+        .ToListAsync();
+
+    var resultado =
+        new List<CobranzaPendienteDto>();
+
+    foreach (var nota in notas)
+    {
+        var cobranzas = await _cobranzas
+            .Find(x => x.NotaId == nota.Id)
+            .ToListAsync();
+
+        var totalCobrado =
+            cobranzas.Sum(x => x.MontoCobrado);
+
+        resultado.Add(
+            new CobranzaPendienteDto
+            {
+                Folio = nota.Folio,
+                ClienteId = nota.ClienteId,
+                TotalVenta = nota.TotalVenta,
+                TotalCobrado = totalCobrado,
+                Pendiente =
+                    nota.TotalVenta - totalCobrado,
+                DiasPendiente =
+                    (DateTime.Now -
+                     nota.FechaVenta).Days
+            });
+    }
+
+    return resultado
+        .OrderByDescending(x => x.DiasPendiente)
+        .ToList();
+}
+
+
 }
